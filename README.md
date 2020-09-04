@@ -1,6 +1,6 @@
-Gravatar 头像缓存插件 For Typecho
+Gravatar & QQ 头像缓存插件 For Typecho
 =============
-由于国内访问 Gravatar 头像经常抽筋，此插件将会自动下载用户的头像到本地。
+由于国内访问 Gravatar 头像经常抽筋，且国内QQ邮箱使用人数较多，此插件将会自动缓存用户的 Gravatar 头像或者 QQ 头像到本地。
 
 ### 使用说明
 - 下载插件
@@ -9,6 +9,9 @@ Gravatar 头像缓存插件 For Typecho
 - 启用插件即可
 
 ###升级日志
+
+####3.1.0 at 2020-09-04
+- 对于数字QQ邮箱，改为获取QQ头像
 
 ####2.0.2 at 2012-04-07
 - 修复初次激活插件，初次调用 getGravatarCache() 不会自动创建缓存文件夹的BUG

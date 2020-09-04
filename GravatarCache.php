@@ -3,9 +3,9 @@
  * Gravatar 头像缓存插件
  *
  * @package GravatarCache
- * @author Byends
- * @version 2.0.2
- * @link http://www.byends.com
+ * @author Byends & asdi998
+ * @version 3.1.0
+ * @link https://github.com/asdi998
  */
 class GravatarCache implements Typecho_Plugin_Interface
 {
@@ -96,15 +96,26 @@ class GravatarCache implements Typecho_Plugin_Interface
         $siteUrl = Helper::options()->siteUrl;
         $dir = __TYPECHO_ROOT_DIR__ . DIRECTORY_SEPARATOR;
         $referer = "http://www.gravatar.com";
+        $referer_qq = "https://id.qq.com/";
         $path = $option->dir;
         $path = substr($path, 0, 1) == '/' ? substr($path, 1) : $path;
         $path = substr($path, -1, 1) != '/' ? $path.'/' : $path;
         $file = $dir.$path.'default.jpg';
+        $file_qq = $dir.$path.'default_qq.jpg';
         $default = empty($default) ? 'mm' : $default;
         $default = $default == 'mm' ? $default : urlencode($default);
 
+        /** QQ头像的尺寸，仅支持40、100等少数尺寸*/
+        $size_qq = '40';
+
         if(!self::mkdirs(dirname($file))){
             throw new exception('GravatarCache 目录创建失败，请检查指定的根目录是否可写' );
+        }
+
+        /** 如果默认的 default_qq.jpg不存在，则下载 QQ 默认的头像到本地*/
+        if(!file_exists($file_qq)){
+            $avatar = 'http://q1.qlogo.cn/headimg_dl?dst_uin=0&spec='.$size_qq;
+            if(!self::download($avatar, $referer_qq, $file_qq)) copy($avatar, $file_qq);
         }
 
         /** 如果默认的 default.jpg不存在，则下载 gravatar 默认的头像到本地*/
@@ -123,6 +134,16 @@ class GravatarCache implements Typecho_Plugin_Interface
             $avatar = $host.'/avatar/'.$defaultMail.'?d='.$default.'&s='.$size.'&r='.$rating;
             if(!self::download($avatar, $referer, $baseFile)) copy($avatar, $baseFile);
             if(filesize($baseFile) == 911 && filesize($file) != 911) copy($file, $baseFile);
+
+            /** 得到默认gravatar头像时，检查邮箱是否为QQ并获取头像*/
+            if(filesize($file) == filesize($baseFile)) {
+                $mailstr = explode('@', strtolower($mail));
+                if($mailstr[1] == 'qq.com' && file_exists($file_qq) && is_numeric($mailstr[0])){
+                    $host = $isSecure ? 'https://q2.qlogo.cn' : 'http://q1.qlogo.cn';
+                    $avatar = $host.'/headimg_dl?dst_uin='.$mailstr[0].'&spec='.$size_qq;
+                    if(!self::download($avatar, $referer_qq, $baseFile)) copy($avatar, $baseFile);
+                }
+            }
         }
         return $imgUrl;
     }
